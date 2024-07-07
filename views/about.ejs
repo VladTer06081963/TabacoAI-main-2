@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head') %>
+
+  <body>
+
+    <%- include('partials/header') %>
+
+      <h1>Про AITabaco</h1>
+      <p>"Этот сайт сгенерирован Искуственным Интеллектом"</p>
+      <div class="container-about">
+        <div class="dropdown" onclick="toggleDropdown()">
+          <h3 id="dropdown-title">Нажмите, чтобы раскрыть</h3>
+          <div class="dropdown-content" id="dropdown-content">
+            <p>Смысл существования Искусственного Интеллекта заключается
+              в обеспечении человечества новыми возможностями в решении сложных задач,
+              на которые может быть не хватает данных или времени выполнить.</p>
+          </div>
+        </div>
+        <div id="info-box" style="margin-top: 20px;">
+          <!-- Место для отображения информации -->
+          <div id="messages"></div>
+        </div>
+      </div>
+      <script src="/js/about.js"></script>
+      <!-- <script>
+  
+  </script> -->
+      <%- include('partials/footer') %>
+  </body>
+
+</html>

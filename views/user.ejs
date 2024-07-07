@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head') %>
+
+  <body>
+    <%- include('partials/header') %>
+
+      <h1>Страница пользователя: <%= username %>
+      </h1>
+      <% if(username=='pnikolenko' ) { %>
+
+        <ul>
+          <% hobbies.forEach((el)=> { %>
+            <li>
+              <%= el %>
+            </li>
+            <%}) %>
+        </ul>
+        <% } %>
+
+          <%- include('partials/footer') %>
+  </body>
+
+</html>
