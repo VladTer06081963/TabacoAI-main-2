@@ -1,31 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <%- include('partials/head') %>
-
-  <body>
-
-    <%- include('partials/header') %>
-
-      <div class="container">
-        <h1>Tabaco GPT</h1>
-        <img src="/img/mag.png" alt="Mag" width="140" height="140" />
-        <h3>
-          Внедрение Искуственного Интеллекта помогает развивать новые
-          инновационные решения и улучшает жизнь людей...
-        </h3>
-      </div>
-      <!-- respons chatGpt -->
-      <div id="messages"></div>
-      <!-- gpt chat question -->
-      <form onsubmit="submitForm(event)">
-        <input type="text" id="input" placeholder="Введите ваш вопрос " />
-      </form>
-
-      <%- include('partials/footer') %>
-
-        <script src="/js/index.js"></script>
-
-  </body>
-
+<body>
+  <%- include('partials/header') %>
+  <div class="container">
+    <h1>Tabaco GPT</h1>
+    <img src="/img/mag.png" alt="Mag" width="140" height="140" />
+    <h3>
+      Внедрение Искуственного Интеллекта помогает развивать новые
+      инновационные решения и улучшает жизнь людей...
+    </h3>
+  </div>
+  <!-- respons chatGpt -->
+  <div id="messages"></div>
+  <!-- gpt chat question -->
+   <!-- Пользователь вводит сообщение в форме на веб-странице. -->
+  <form id="question-form">
+    <input type="text" id="input" placeholder="Введите ваш вопрос " />
+  </form>
+  <%- include('partials/footer') %>
+  <script src="/js/index.js"></script>
+</body>
 </html>

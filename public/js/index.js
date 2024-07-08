@@ -1,153 +1,94 @@
-// function submitForm(event) {
-//   event.preventDefault();
-//   getData();
-// }
-// async function getData() {
-//   let userData = document.getElementById("input").value.trim();
-//   if (userData === "") return false;
-
-//   document.getElementById("messages").innerHTML =
-//     `<div class="mess-user">
-//       <h3>Ваш запрос принят...</h3> 
-//       <div class="loader"></div>
-//       <p>${userData}</p>
-//     </div>` + document.getElementById("messages").innerHTML;
-
-//   document.getElementById("input").value = "";
-//   const loader = document.querySelector(".mess-user .loader");
-//   loader.style.display = "block";
-
-//   try {
-//     const response = await fetch("/api/message", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({ content: userData }),
-//     });
-//     if (!response.ok) {
-//       throw new Error("Произошла ошибка при получении данных с сервера");
-//     }
-//     const data = await response.json();
-
-//     loader.style.display = "none";
-//     document.getElementById("messages").innerHTML =
-//       `<div class="mess-chat">
-//         <p>${data}</p>
-//       </div>` + document.getElementById("messages").innerHTML;
-//   } catch (error) {
-//     console.error("Error:", error);
-//     loader.style.display = "none";
-//     document.getElementById("messages").innerHTML =
-//       `<div class="mess-chat error">
-//         <p>Ошибка: Не удалось получить ответ. Пожалуйста, попробуйте позже.</p>
-//       </div>` + document.getElementById("messages").innerHTML;
-//   }
-// }
-// Возможно, вам также понадобится обработчик событий для формы, если он не объявлен в HTML:
-
-// document.addEventListener("DOMContentLoaded", function () {
-//   const form = document.querySelector("form");
-//   form.addEventListener("submit", submitForm);
-// });
-
-
-//New code 
-
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form");
-  form.addEventListener("submit", submitForm);
+  form.addEventListener("submit", handleSubmit);
 });
 
+// let dialogHistory = [];
 let messages = [];
 
-// Сброс истории диалога при начале нового диалога
-function startNewDialog() {
-  messages = []; // Обнуление массива истории диалога
-}
+// const startNewDialog = () => dialogHistory = [];
+const startNewDialog = () => messages = [];
 
-function submitForm(event) {
+const handleSubmit = (event) => {
   event.preventDefault();
-  getData();
+  handleUserInput();
 }
 
-async function getData() {
+const handleUserInput = async () => {
   const userInput = document.getElementById("input").value.trim();
-  if (userInput === "") return;
+  if (!userInput) return;
 
-  showUserMessage(userInput);
+  displayUserMessage(userInput);
   clearInput();
   toggleLoader(true);
 
-  // Если начат новый диалог, сбросить историю диалога
   if (userInput.toLowerCase() === "начать новый диалог") {
     startNewDialog();
   }
 
-  // Добавление пользовательского сообщения в историю диалога
+  // dialogHistory.push({ role: "user", content: userInput });
   messages.push({ role: "user", content: userInput });
 
   try {
+    const botMessage = await fetchBotResponse(userInput);
+    // dialogHistory.push({ role: "assistant", content: botMessage });
+    messages.push({ role: "assistant", content: botMessage });
+    displayBotMessage(botMessage);
+  } catch (error) {
+    displayErrorMessage(error.message);
+  } finally {
+    toggleLoader(false);
+  }
+}
+
+const fetchBotResponse = async (userInput) => {
+  try {
+    // const requestBody = JSON.stringify({ content: userInput, messages: dialogHistory });
+    const requestBody = JSON.stringify({ content: userInput, messages: messages });
+    console.log("Sending request with body:", requestBody); // Логирование тела запроса
+
     const response = await fetch("/api/message", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ content: userInput, messages: messages }),
+      body: requestBody,
     });
 
-    const result = await response.json();
-
-    if (response.ok) {
-      const botMessage = result.data;
-      // Добавление ответа бота в историю диалога
-      messages.push({ role: "assistant", content: botMessage });
-      toggleLoader(false);
-      showServerMessage(botMessage);
-    } else {
-      throw new Error(result.error);
+    if (!response.ok) {
+      const errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      console.error(errorMessage);
+      throw new Error(errorMessage);
     }
+
+    const result = await response.json();
+    return result.data;
   } catch (error) {
-    console.error("Ошибка:", error);
-    toggleLoader(false);
-    showErrorMessage(error.message);
+    console.error("Fetch error:", error.message || error);
+    throw error;
   }
-}
+};
 
-function showUserMessage(message) {
+const displayMessage = (message, isUser = true, isError = false) => {
   const messagesContainer = document.getElementById("messages");
-  const userMessageHtml = `
-    <div class="mess-user">
-      <h3>Ваш запрос принят...</h3>
-      <div class="loader"></div>
+  const messageClass = isUser ? 'mess-user' : 'mess-chat';
+  const errorClass = isError ? ' error' : '';
+  const loaderHtml = isUser ? '<h3>Ваш запрос принят...</h3><div class="loader"></div>' : '';
+  const messageHtml = `
+    <div class="${messageClass}${errorClass}">
+      ${loaderHtml}
       <p>${message}</p>
     </div>`;
-  messagesContainer.innerHTML = userMessageHtml + messagesContainer.innerHTML;
+  messagesContainer.innerHTML = messageHtml + messagesContainer.innerHTML;
 }
 
-function showServerMessage(message) {
-  const messagesContainer = document.getElementById("messages");
-  const serverMessageHtml = `
-    <div class="mess-chat">
-      <p>${message}</p>
-    </div>`;
-  messagesContainer.innerHTML = serverMessageHtml + messagesContainer.innerHTML;
-}
+const displayUserMessage = (message) => displayMessage(message);
+const displayBotMessage = (message) => displayMessage(message, false);
+const displayErrorMessage = (error) => displayMessage(`Ошибка: ${error}. Пожалуйста, попробуйте позже.`, false, true);
 
-function showErrorMessage(error) {
-  const messagesContainer = document.getElementById("messages");
-  const errorMessageHtml = `
-    <div class="mess-chat error">
-      <p>Ошибка: ${error}. Пожалуйста, попробуйте позже.</p>
-    </div>`;
-  messagesContainer.innerHTML = errorMessageHtml + messagesContainer.innerHTML;
-}
+const clearInput = () => document.getElementById("input").value = "";
 
-function clearInput() {
-  document.getElementById("input").value = "";
-}
-
-function toggleLoader(show) {
+const toggleLoader = (show) => {
   const loader = document.querySelector(".mess-user .loader");
   if (loader) {
     loader.style.display = show ? "block" : "none";
